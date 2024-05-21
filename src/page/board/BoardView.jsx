@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
   Box,
+  Button,
   FormControl,
   FormLabel,
   Input,
@@ -31,6 +32,10 @@ export function BoardView() {
         }
       });
   }, []);
+
+  function handleClickRemove() {
+    axios.delete(`/api/board/${id}`);
+  }
 
   if (board === null) {
     return <Spinner />;
@@ -62,6 +67,12 @@ export function BoardView() {
             <Input type={"datetime-local"} value={board.inserted} readOnly />
           </FormControl>
         </Box>
+      </Box>
+      <Box>
+        <Button colorScheme={"purple"}>수정</Button>
+        <Button colorScheme={"red"} onClick={handleClickRemove}>
+          삭제
+        </Button>
       </Box>
     </Box>
   );
