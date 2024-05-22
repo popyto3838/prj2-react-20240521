@@ -191,8 +191,9 @@ export function MemberSignup() {
             <FormLabel>별명</FormLabel>
             <InputGroup>
               <Input
+                value={nickName}
                 onChange={(e) => {
-                  setNickName(e.target.value);
+                  setNickName(e.target.value.trim());
                   setIsCheckedNickName(false);
                 }}
               />
