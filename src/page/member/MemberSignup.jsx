@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   FormControl,
+  FormHelperText,
   FormLabel,
   Input,
   InputGroup,
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 export function MemberSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordCheck, setPasswordCheck] = useState("");
   const [nickName, setNickName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -62,19 +64,43 @@ export function MemberSignup() {
           description: "사용할 수 없는 이메일입니다.",
           position: "top",
         });
-      }) //이미 있는 이메일
+      }) // 이미 있는 이메일 (사용 못함)
       .catch((err) => {
-        if (err.response.status === 400) {
-          //사용할 수 있는 이메일
+        if (err.response.status === 404) {
+          // 사용할 수 있는 이메일
           toast({
             status: "info",
-            description: "사용할 수 있는 이메일 입니다.",
+            description: "사용할 수 있는 이메일입니다.",
             position: "top",
           });
         }
       })
       .finally();
   }
+
+  function handleCheckNickName() {
+    axios
+      .get(`/api/member/check?nickName=${nickName}`)
+      .then((res) => {
+        toast({
+          status: "warning",
+          description: "사용할 수 없는 닉네임입니다.",
+          position: "top",
+        });
+      })
+      .catch((err) => {
+        if (err.response.status === 404) {
+          toast({
+            status: "info",
+            description: "사용할 수 있는 닉네임 입니다.",
+            position: "top",
+          });
+        }
+      })
+      .finally();
+  }
+
+  const isCheckedPassword = password === passwordCheck;
 
   return (
     <Box>
@@ -101,8 +127,25 @@ export function MemberSignup() {
         </Box>
         <Box>
           <FormControl>
+            <FormLabel>암호확인</FormLabel>
+            <Input onChange={(e) => setPasswordCheck(e.target.value)} />
+
+            {isCheckedPassword || (
+              <FormHelperText>암호가 일치하지 않습니다.</FormHelperText>
+            )}
+          </FormControl>
+        </Box>
+        <Box>
+          <FormControl>
             <FormLabel>별명</FormLabel>
-            <Input onChange={(e) => setNickName(e.target.value)} />
+            <InputGroup>
+              <Input onChange={(e) => setNickName(e.target.value)} />
+              <InputRightElement w={"75px"} mr={3}>
+                <Button onClick={handleCheckNickName} size={"sm"}>
+                  중복확인
+                </Button>
+              </InputRightElement>
+            </InputGroup>
           </FormControl>
         </Box>
         <Box>
