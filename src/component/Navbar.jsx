@@ -9,18 +9,14 @@ export function Navbar() {
       <Box
         onClick={() => navigate("/")}
         cursor={"pointer"}
-        _hover={{
-          bgColor: "gray.100",
-        }}
+        _hover={{ bgColor: "gray.100" }}
       >
         Home
       </Box>
       <Box
         onClick={() => navigate("/write")}
         cursor={"pointer"}
-        _hover={{
-          bgColor: "gray.200",
-        }}
+        _hover={{ bgColor: "gray.200" }}
       >
         글쓰기
       </Box>
