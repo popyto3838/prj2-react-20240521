@@ -22,6 +22,7 @@ export function MemberSignup() {
   const [isCheckedEmail, setIsCheckedEmail] = useState(false);
   const [isCheckedNickName, setIsCheckedNickName] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
+
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -166,7 +167,7 @@ export function MemberSignup() {
             )}
             {isValidEmail || (
               <FormHelperText>
-                올바른 이메일 형식으로 작성해주세요
+                올바른 이메일 형식으로 작성해 주세요.
               </FormHelperText>
             )}
           </FormControl>
