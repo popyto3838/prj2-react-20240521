@@ -23,8 +23,10 @@ import { useNavigate, useParams } from "react-router-dom";
 
 export function MemberEdit() {
   const [member, setMember] = useState(null);
-  const [oldPassword, setOldPassword] = useState();
-  const [isCheckedNickName, setIsCheckedNickName] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [passwordCheck, setPasswordCheck] = useState("");
+  const [isCheckedNickName, setIsCheckedNickName] = useState(true);
+  const [oldNickName, setOldNickName] = useState("");
   const { id } = useParams();
   const toast = useToast();
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ export function MemberEdit() {
       .then((res) => {
         const member1 = res.data;
         setMember({ ...member1, password: "" });
+        setOldNickName(member1.nickName);
       })
       .catch(() => {
         toast({
@@ -50,22 +53,66 @@ export function MemberEdit() {
   function handleClickSave() {
     axios
       .put("/api/member/modify", { ...member, oldPassword })
-      .then((res) => {})
-      .catch(() => {})
-      .finally(() => {});
+      .then((res) => {
+        toast({
+          status: "success",
+          description: "회원 정보가 수정되었습니다.",
+          position: "top",
+        });
+        navigate(`/member/${id}`);
+      })
+      .catch(() => {
+        toast({
+          status: "error",
+          description: "회원 정보가 수정되지 않았습니다",
+          position: "top",
+        });
+      })
+      .finally(() => {
+        onClose();
+        setOldPassword("");
+      });
   }
 
   if (member === null) {
     return <Spinner />;
   }
 
+  let isDisableNickNameCheckButton = false;
+
+  if (member.nickName === oldNickName) {
+    isDisableNickNameCheckButton = true;
+  }
+
+  if (member.nickName.length == 0) {
+    isDisableNickNameCheckButton = true;
+  }
+
+  if (isCheckedNickName) {
+    isDisableNickNameCheckButton = true;
+  }
+
+  let isDisableSaveButton = false;
+
+  if (member.password !== passwordCheck) {
+    isDisableSaveButton = true;
+  }
+
+  if (member.nickName.trim().length === 0) {
+    isDisableSaveButton = true;
+  }
+
+  if (!isCheckedNickName) {
+    isDisableSaveButton = true;
+  }
+
   function handleCheckNickName() {
     axios
-      .get(`api/member/check?nickName=${member.nickName}`)
+      .get(`/api/member/check?nickName=${member.nickName}`)
       .then((res) => {
         toast({
           status: "warning",
-          description: "사용 할 수없는 별명입니다",
+          description: "사용할 수 없는 별명입니다.",
           position: "top",
         });
       })
@@ -73,12 +120,13 @@ export function MemberEdit() {
         if (err.response.status === 404) {
           toast({
             status: "info",
-            description: " 사용할 수있는 별명입니다",
+            description: "사용할 수 있는 별명입니다.",
             position: "top",
           });
           setIsCheckedNickName(true);
         }
-      });
+      })
+      .finally();
   }
 
   return (
@@ -108,21 +156,27 @@ export function MemberEdit() {
         <Box>
           <FormControl>
             <FormLabel>암호 확인</FormLabel>
-            <Input />
+            <Input onChange={(e) => setPasswordCheck(e.target.value)} />
+            {member.password === passwordCheck || (
+              <FormHelperText>암호가 일치하지 않습니다.</FormHelperText>
+            )}
           </FormControl>
         </Box>
         <Box>
           <FormControl>별명</FormControl>
           <InputGroup>
             <Input
-              onChange={(e) =>
-                setMember({ ...member, nickName: e.target.value })
-              }
+              onChange={(e) => {
+                const newNickName = e.target.value.trim();
+                setMember({ ...member, nickName: newNickName });
+                setIsCheckedNickName(newNickName === oldNickName);
+              }}
               value={member.nickName}
             />
             <InputRightElement w={"75px"} mr={1}>
               <Button
-                isDisabled={member.nickName.trim().length == 0}
+                isDisabled={isDisableNickNameCheckButton}
+                size={"sm"}
                 onClick={handleCheckNickName}
               >
                 중복확인
@@ -131,7 +185,11 @@ export function MemberEdit() {
           </InputGroup>
         </Box>
         <Box>
-          <Button onClick={onOpen} colorScheme={"blue"}>
+          <Button
+            isDisabled={isDisableSaveButton}
+            onClick={onOpen}
+            colorScheme={"blue"}
+          >
             저장
           </Button>
         </Box>
@@ -139,16 +197,18 @@ export function MemberEdit() {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>기존암호확인</ModalHeader>
+          <ModalHeader>기존 암호 확인</ModalHeader>
           <ModalBody>
             <FormControl>
-              <FormLabel>기존암호</FormLabel>
+              <FormLabel>기존 암호</FormLabel>
               <Input onChange={(e) => setOldPassword(e.target.value)} />
             </FormControl>
           </ModalBody>
           <ModalFooter>
             <Button onClick={onClose}>취소</Button>
-            <Button onClick={handleClickSave}>확인</Button>
+            <Button colorScheme="blue" onClick={handleClickSave}>
+              확인
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
