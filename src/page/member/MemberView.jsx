@@ -4,18 +4,28 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Spinner,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export function MemberView() {
-  const { id } = useParams();
   const [member, setMember] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const { id } = useParams();
   const toast = useToast();
   const navigate = useNavigate();
+  const { onOpen, isOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     axios
@@ -32,6 +42,33 @@ export function MemberView() {
         }
       });
   }, []);
+
+  function handleClickRemove() {
+    setIsLoading(true);
+
+    axios
+      .delete(`/api/member/${id}`, { data: { id, password } })
+      .then(() => {
+        toast({
+          status: "success",
+          description: "회원 탈퇴하였습니다.",
+          position: "top",
+        });
+        navigate("/");
+      })
+      .catch(() => {
+        toast({
+          status: "warning",
+          description: "회원 탈퇴 중 문제가 발생하였습니다.",
+          position: "top",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setPassword("");
+        onClose();
+      });
+  }
 
   if (member === null) {
     return <Spinner />;
@@ -67,10 +104,40 @@ export function MemberView() {
           </FormControl>
         </Box>
         <Box>
-          <Button colorScheme={"purple"}>수정</Button>
-          <Button colorScheme={"red"}>삭제</Button>
+          <Button
+            colorScheme={"purple"}
+            onClick={() => navigate(`/member/edit/${member.id}`)}
+          >
+            수정
+          </Button>
+          <Button colorScheme={"red"} onClick={onOpen}>
+            탈퇴
+          </Button>
         </Box>
       </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>탈퇴 확인</ModalHeader>
+          <ModalBody>
+            <FormControl>
+              <FormLabel>암호</FormLabel>
+              <Input onChange={(e) => setPassword(e.target.value)} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose}>취소</Button>
+            <Button
+              isLoading={isLoading}
+              colorScheme={"red"}
+              onClick={handleClickRemove}
+            >
+              확인
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }
