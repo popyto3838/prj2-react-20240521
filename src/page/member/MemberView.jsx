@@ -15,27 +15,29 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { LoginContext } from "../../component/LoginProvider.jsx";
 
 export function MemberView() {
   const [member, setMember] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
+  const account = useContext(LoginContext);
   const { id } = useParams();
   const toast = useToast();
   const navigate = useNavigate();
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   useEffect(() => {
     axios
       .get(`/api/member/${id}`)
       .then((res) => setMember(res.data))
-      .catch((error) => {
-        if (error.response.status === 404) {
+      .catch((err) => {
+        if (err.response.status === 404) {
           toast({
             status: "warning",
-            description: "존재하지 않는 회원입니다",
+            description: "존재하지 않는 회원입니다.",
             position: "top",
           });
           navigate("/");
@@ -47,13 +49,19 @@ export function MemberView() {
     setIsLoading(true);
 
     axios
-      .delete(`/api/member/${id}`, { data: { id, password } })
+      .delete(`/api/member/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        data: { id, password },
+      })
       .then(() => {
         toast({
           status: "success",
           description: "회원 탈퇴하였습니다.",
           position: "top",
         });
+        account.logout();
         navigate("/");
       })
       .catch(() => {
@@ -76,37 +84,30 @@ export function MemberView() {
 
   return (
     <Box>
-      <Box mt={4}>회원정보</Box>
+      <Box>회원 정보</Box>
       <Box>
-        <Box mt={4}>{member.id}번 회원님</Box>
-        <Box mt={4}>
-          <FormControl>
-            <FormLabel>회원번호</FormLabel>
-            <Input value={member.id} readOnly />
-          </FormControl>
-        </Box>
         <Box>
           <FormControl>
             <FormLabel>이메일</FormLabel>
-            <Input value={member.email} readOnly />
+            <Input isReadOnly value={member.email} />
           </FormControl>
         </Box>
         <Box>
           <FormControl>
-            <FormLabel>닉네임</FormLabel>
-            <Input value={member.nickName} readOnly />
+            <FormLabel>별명</FormLabel>
+            <Input isReadOnly value={member.nickName} />
           </FormControl>
         </Box>
         <Box>
           <FormControl>
             <FormLabel>가입일시</FormLabel>
-            <Input value={member.inserted} readOnly type={"datetime-local"} />
+            <Input isReadOnly value={member.inserted} type={"datetime-local"} />
           </FormControl>
         </Box>
         <Box>
           <Button
-            colorScheme={"purple"}
             onClick={() => navigate(`/member/edit/${member.id}`)}
+            colorScheme={"purple"}
           >
             수정
           </Button>
@@ -123,7 +124,10 @@ export function MemberView() {
           <ModalBody>
             <FormControl>
               <FormLabel>암호</FormLabel>
-              <Input onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </FormControl>
           </ModalBody>
           <ModalFooter>

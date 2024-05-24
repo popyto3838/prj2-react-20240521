@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -17,10 +17,12 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
+import { LoginContext } from "../../component/LoginProvider.jsx";
 
 export function BoardView() {
   const { id } = useParams();
   const [board, setBoard] = useState(null);
+  const account = useContext(LoginContext);
   const toast = useToast();
   const navigate = useNavigate();
   const { isOpen, onClose, onOpen } = useDisclosure();
@@ -43,7 +45,11 @@ export function BoardView() {
 
   function handleClickRemove() {
     axios
-      .delete(`/api/board/${id}`)
+      .delete(`/api/board/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
       .then(() => {
         toast({
           status: "success",
@@ -92,18 +98,19 @@ export function BoardView() {
           </FormControl>
         </Box>
       </Box>
-      <Box>
-        <Button
-          colorScheme={"purple"}
-          onClick={() => navigate(`/edit/${board.id}`)}
-        >
-          수정
-        </Button>
-        <Button colorScheme={"red"} onClick={onOpen}>
-          삭제
-        </Button>
-      </Box>
-
+      {account.hasAccess(board.memberId) && (
+        <Box>
+          <Button
+            colorScheme={"purple"}
+            onClick={() => navigate(`/edit/${board.id}`)}
+          >
+            수정
+          </Button>
+          <Button colorScheme={"red"} onClick={onOpen}>
+            삭제
+          </Button>
+        </Box>
+      )}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
