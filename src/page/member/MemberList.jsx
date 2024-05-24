@@ -9,7 +9,7 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import axios from "axios";
+import { customAxios as axios } from "../../axiosInstance.jsx";
 import { useNavigate } from "react-router-dom";
 
 export function MemberList() {
@@ -40,7 +40,7 @@ export function MemberList() {
             {memberList.map((member) => (
               <Tr
                 cursor={"pointer"}
-                _hover={{ bgColor: "orange.200" }}
+                _hover={{ bgColor: "gray.200" }}
                 onClick={() => navigate(`/member/${member.id}`)}
                 key={member.id}
               >

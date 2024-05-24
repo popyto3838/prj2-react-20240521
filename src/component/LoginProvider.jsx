@@ -7,6 +7,7 @@ export function LoginProvider({ children }) {
   const [id, setId] = useState("");
   const [nickName, setNickName] = useState("");
   const [expired, setExpired] = useState(0);
+  const [authority, setAuthority] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -21,9 +22,13 @@ export function LoginProvider({ children }) {
     return Date.now() < expired * 1000;
   }
 
-  // 권한 있는지 ? 확인
+  // 권한 있는 지? 확인
   function hasAccess(param) {
     return id == param;
+  }
+
+  function isAdmin() {
+    return authority.includes("admin");
   }
 
   // login
@@ -33,6 +38,7 @@ export function LoginProvider({ children }) {
     setExpired(payload.exp);
     setId(payload.sub);
     setNickName(payload.nickName);
+    setAuthority(payload.scope.split(" ")); // "admin manager user"
   }
   // logout
   function logout() {
@@ -40,6 +46,7 @@ export function LoginProvider({ children }) {
     setExpired(0);
     setId("");
     setNickName("");
+    setAuthority([]);
   }
 
   return (
@@ -51,6 +58,7 @@ export function LoginProvider({ children }) {
         logout: logout,
         isLoggedIn: isLoggedIn,
         hasAccess: hasAccess,
+        isAdmin: isAdmin,
       }}
     >
       {children}

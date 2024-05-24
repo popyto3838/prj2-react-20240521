@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { customAxios as axios } from "../../axiosInstance.jsx";
 import {
   Box,
   Button,
@@ -32,11 +32,7 @@ export function BoardEdit() {
 
   function handleClickSave() {
     axios
-      .put("/api/board/edit", board, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+      .put("/api/board/edit", board)
       .then(() => {
         toast({
           status: "success",

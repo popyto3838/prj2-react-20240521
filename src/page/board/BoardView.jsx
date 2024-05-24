@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { customAxios as axios } from "../../axiosInstance.jsx";
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Textarea,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
@@ -45,11 +46,7 @@ export function BoardView() {
 
   function handleClickRemove() {
     axios
-      .delete(`/api/board/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+      .delete(`/api/board/${id}`)
       .then(() => {
         toast({
           status: "success",
@@ -61,9 +58,12 @@ export function BoardView() {
       .catch(() => {
         toast({
           status: "error",
-          description: `${id}번 게시물 삭제 중 오류가 발생하였습니다`,
+          description: `${id}번 게시물 삭제 중 오류가 발생하였습니다.`,
           position: "top",
         });
+      })
+      .finally(() => {
+        onClose();
       });
   }
 
@@ -83,7 +83,7 @@ export function BoardView() {
       <Box>
         <FormControl>
           <FormLabel>본문</FormLabel>
-          <Input value={board.content} readOnly />
+          <Textarea value={board.content} readOnly />
         </FormControl>
       </Box>
       <Box>
@@ -91,12 +91,10 @@ export function BoardView() {
           <FormLabel>작성자</FormLabel>
           <Input value={board.writer} readOnly />
         </FormControl>
-        <Box>
-          <FormControl>
-            <FormLabel>작성일시</FormLabel>
-            <Input type={"datetime-local"} value={board.inserted} readOnly />
-          </FormControl>
-        </Box>
+      </Box>
+      <Box>
+        <FormControl>작성일시</FormControl>
+        <Input type={"datetime-local"} value={board.inserted} readOnly />
       </Box>
       {account.hasAccess(board.memberId) && (
         <Box>
@@ -111,6 +109,7 @@ export function BoardView() {
           </Button>
         </Box>
       )}
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

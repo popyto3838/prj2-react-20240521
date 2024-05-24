@@ -14,12 +14,12 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
+import { useContext, useEffect, useState } from "react";
+import { customAxios as axios } from "../../axiosInstance.jsx";
 import { useNavigate, useParams } from "react-router-dom";
-import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { LoginContext } from "../../component/LoginProvider.jsx";
 
-export function MemberView() {
+export function MemberInfo() {
   const [member, setMember] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState("");
@@ -45,6 +45,13 @@ export function MemberView() {
             position: "top",
           });
           navigate("/");
+        } else if (err.response.status === 403) {
+          toast({
+            status: "error",
+            description: "권한이 없습니다.",
+            position: "top",
+          });
+          navigate(-1);
         }
       });
   }, []);
@@ -108,17 +115,19 @@ export function MemberView() {
             <Input isReadOnly value={member.inserted} type={"datetime-local"} />
           </FormControl>
         </Box>
-        <Box>
-          <Button
-            onClick={() => navigate(`/member/edit/${member.id}`)}
-            colorScheme={"purple"}
-          >
-            수정
-          </Button>
-          <Button colorScheme={"red"} onClick={onOpen}>
-            탈퇴
-          </Button>
-        </Box>
+        {account.hasAccess(member.id) && (
+          <Box>
+            <Button
+              onClick={() => navigate(`/member/edit/${member.id}`)}
+              colorScheme={"purple"}
+            >
+              수정
+            </Button>
+            <Button colorScheme={"red"} onClick={onOpen}>
+              탈퇴
+            </Button>
+          </Box>
+        )}
       </Box>
 
       <Modal isOpen={isOpen} onClose={onClose}>

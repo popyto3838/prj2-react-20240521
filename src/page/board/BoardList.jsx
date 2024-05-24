@@ -1,16 +1,13 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPen } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { customAxios as axios } from "../../axiosInstance.jsx";
 import { useNavigate } from "react-router-dom";
 
 export function BoardList() {
   const [boardList, setBoardList] = useState([]);
   const navigate = useNavigate();
-  //[{id:5, title:"제목1", writer :"누구1"},
-  // {id:4, title :"제목2, wirter :"누구2"},
-  // {id:3, title:"제목3, writer :" 누구3"}]
 
   useEffect(() => {
     axios.get("/api/board/list").then((res) => setBoardList(res.data));
@@ -33,7 +30,9 @@ export function BoardList() {
           <Tbody>
             {boardList.map((board) => (
               <Tr
-                _hover={{ bgColor: "orange.200" }}
+                _hover={{
+                  bgColor: "gray.200",
+                }}
                 cursor={"pointer"}
                 onClick={() => navigate(`/board/${board.id}`)}
                 key={board.id}
